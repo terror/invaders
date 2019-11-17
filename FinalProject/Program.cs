@@ -15,20 +15,38 @@ namespace FinalProject
             int y = 20;
             ConsoleKey key;
 
-
+            int choice;
 
             do
             {
-                // get user key
-                key = getKeyStroke();
+                Console.WriteLine("Enter a choice!\n" +
+                    "1 - New Game\n" +
+                    "2 - Options\n" +
+                    "3 - Exit\n");
+                int.TryParse(Console.ReadLine(), out choice);
 
-                //move
-                move(key, ref x, ref y);
+                switch (choice)
+                {
+                    case 1:
+                        do
+                        {
+                            key = getKeyStroke(); // get key pressed by user
+                            move(key, ref x, ref y); // move based on key pressed by user
+                            draw(meChar, x, y); // draw player character 'X'
 
-                //draw
-                draw(meChar, x, y);
+                        } while (!gameover(key));
+                        break;
 
-            } while (!gameover(key));
+                    case 2:
+                        break;
+
+                    case 3:
+                        break;
+                }
+
+            } while (choice > 0 && choice <= 3);
+
+
         }
 
         static ConsoleKey getKeyStroke() // reading the key pressed by user, no issues.
