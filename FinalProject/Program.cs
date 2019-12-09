@@ -34,21 +34,23 @@ namespace FinalProject
         static Random value = new Random();
         static bool hit;
         static bool bulletHit;
+        static int screenClearCount = 0;
+        static string canPlayerShoot = "Yes";
+        static int index = 0;
+
 
         static void Main(string[] args)
         {
-            // set window size on windows machine
-            // Console.BufferHeight = Console.WindowHeight = 20;
-            // Console.BufferWidth = Console.WindowWidth = 30;
-
             //Creation of the player object
             Object player = new Object();
-            player.x = 2;
+            player.x = playfieldWidth / 2;
             player.y = Console.WindowHeight - 1;
             player.onscreen = 'X';
 
             List<Object> objects = new List<Object>();
             List<Object> bullets = new List<Object>();
+
+
             int choice;
 
             do
@@ -93,15 +95,17 @@ namespace FinalProject
                                     Environment.Exit(0);
                                 }
 
+                                // creats bullet is pressed key == UPARROW
                                 createBullet(pressedKey, bullets, player.x, player.y);
                             }
-                            // bullet movement and collision check
+
+                            // bullet movement
                             List<Object> newListBullet = new List<Object>();
-                            for (int i = 0; i < bullets.Count; i++)
+
+                            for (index = 0; index < bullets.Count; index++)
                             {
                                 newBullet = new Object();
-                                moveBullet(bullets, newBullet, i);
-                                //bulletCollisionCheck(newObject.x, newBullet.x, newObject.y, newBullet.y);
+                                moveBullet(bullets, newBullet);
 
 
                                 if (newBullet.y < Console.WindowHeight)
@@ -109,8 +113,9 @@ namespace FinalProject
                                     newListBullet.Add(newBullet);
                                 }
                             }
-                            //object movement and collision check
+                            //object movement and player collision check
                             List<Object> newListObject = new List<Object>();
+
                             for (int i = 0; i < objects.Count; i++)
                             {
                                 newObject = new Object();
@@ -126,25 +131,39 @@ namespace FinalProject
                             objects = newListObject;
                             bullets = newListBullet;
 
-                            // checks if bullet is going to leave the console window
-                            if (newBullet.y == 0)
+                            // checks if bullet is going to leave the console window, only one bullet can be tracked. Also checks if player is able to shoot and displays is on screen
+                            bool isEmpty = !newListBullet.Any();
+
+                            if (newBullet.y == 0 || bulletHit)
                             {
-                                newListBullet.Remove(newBullet);
+                                newListBullet.Clear();
                             }
+
+                            if (isEmpty)
+                            {
+                                canPlayerShoot = "Yes";
+                            }
+                            else
+                            {
+                                canPlayerShoot = "No";
+                            }
+
+                            //refresh
                             Console.Clear();
 
-                            // checks if hit by '#'
+                            // checks if player hit by '#' or bullet hit '#'
                             bulletHitCheck(objects, bullets);
                             enemyHitCheck(objects, player.onscreen, player.x, player.y);
 
-                            foreach (Object newBullet in bullets)
+                            //draw loop for bullets and objects
+                            foreach (Object Bullet in bullets)
                             {
-                                draw(newBullet.onscreen, ref newBullet.x, ref newBullet.y);
+                                draw(Bullet.onscreen, ref Bullet.x, ref Bullet.y);
                             }
 
-                            foreach (Object newObject in objects)
+                            foreach (Object Object in objects)
                             {
-                                draw(newObject.onscreen, ref newObject.x, ref newObject.y);
+                                draw(Object.onscreen, ref Object.x, ref Object.y);
                             }
 
                             // Prints setting data to console window
@@ -154,10 +173,12 @@ namespace FinalProject
                             drawString(playfieldWidth + 2, 7, "Acceleration: " + acceleration);
                             drawString(playfieldWidth + 2, 8, "Max Speed: " + maxspeed);
                             drawString(playfieldWidth + 2, 9, "Playfield Width: " + playfieldWidth);
+                            drawString(playfieldWidth + 2, 10, "Can shoot: " + canPlayerShoot);
+                            drawString(playfieldWidth + 2, 11, "Number of time screen has been cleared: " + screenClearCount);
                             // ---------------------------------------- //
 
 
-                            // ticker
+                            // speed ticker
                             Thread.Sleep((int)(maxspeed - speed));
                         }
 
@@ -165,8 +186,8 @@ namespace FinalProject
                     case 2:
                         Console.WriteLine("You are spawned in the game as player 'X' and are trying to avoid all of the enemies on screen, also known as '#'. " +
                             "The object of the game is to collect as many points ('*') as you can while surviving as long as you can. Use the UP ARROW KEY to shoot bullets. " +
-                            "You may only shoot one bullet at a time and if the bullet collides with an enemy it clears the screen. " +
-                            "The bullets are meant to be used as a tool to clear the screen if overwhelmed." +
+                            "You may only shoot one bullet at a time and if the bullet collides with an enemy it clears the screen. The screen will display when you are allowed to shoot." +
+                            "The bullets are meant to be used as a tool to clear the screen if overwhelmed however the speed does not get reset once the screen is cleared." +
                             "You may change different settings under the options tab. To move you use the left and right arrow keys and to quit at any time press the escape key. Enjoy!\n");
 
                         break;
@@ -271,7 +292,7 @@ namespace FinalProject
             }
         }
 
-        // checks the random chance value generated and makes new object based on that chance
+        // Checks the random chance value generated and makes new object based on that chance
         static void chanceCheck(int dchance, int dlivesObjectChance, int dpointsObjectChance, List<Object> objects)
         {
             if (dchance < dlivesObjectChance)
@@ -306,6 +327,7 @@ namespace FinalProject
             }
         }
 
+        //Moves objects down the console
         public static void moveDownConsole(List<Object> objects, Object newObject, int index)
         {
             Object oldObject = objects[index];
@@ -314,12 +336,13 @@ namespace FinalProject
             newObject.onscreen = oldObject.onscreen;
         }
 
-        // Checks if there is a collision between the object and the player then changes settings accordingly
+        // Checks if there is a collision between the object and the player or the enemy and bullet then changes settings accordingly
         static void collisionCheck(int playerX, int playerY)
         {
             if (newObject.onscreen == '#' && newObject.y == newBullet.y && newObject.x == newBullet.x)
             {
                 bulletHit = true;
+                screenClearCount++;
             }
 
 
@@ -328,7 +351,7 @@ namespace FinalProject
 
                 if (points >= 10)
                 {
-                    speed += 20; // making the * object no longer impact the speed of the player, therfore will increase regardless whether they accumulate points (challenge)
+                    speed += 20; // making the * object now increase the speed of the player, therfore will increase regardless whether they accumulate points (challenge once 10 points)
                 }
                 else
                 {
@@ -359,11 +382,11 @@ namespace FinalProject
             }
         }
 
-        static void bulletHitCheck(List<Object> objects, List<Object> bullets)
+        static void bulletHitCheck(List<Object> newListObject, List<Object> bullets)
         {
             if (bulletHit)
             {
-                objects.Clear();
+                newListObject.Clear();
                 bullets.Remove(newBullet);
                 bulletHit = false;
             }
@@ -395,7 +418,7 @@ namespace FinalProject
             }
         }
 
-        static void moveBullet(List<Object> bullets, Object bullet, int index)
+        static void moveBullet(List<Object> bullets, Object bullet)
         {
             Object oldBullet = bullets[index];
             bullet.x = oldBullet.x;
