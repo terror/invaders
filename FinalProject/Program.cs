@@ -110,7 +110,7 @@ namespace FinalProject
                                 }
                             }
                             //object movement and collision check
-                            List<Object> newList = new List<Object>();
+                            List<Object> newListObject = new List<Object>();
                             for (int i = 0; i < objects.Count; i++)
                             {
                                 newObject = new Object();
@@ -119,11 +119,11 @@ namespace FinalProject
 
                                 if (newObject.y < Console.WindowHeight)
                                 {
-                                    newList.Add(newObject);
+                                    newListObject.Add(newObject);
                                 }
                             }
                             //refreshing y positions & clearing to draw again
-                            objects = newList;
+                            objects = newListObject;
                             bullets = newListBullet;
 
                             // checks if bullet is going to leave the console window
@@ -154,7 +154,6 @@ namespace FinalProject
                             drawString(playfieldWidth + 2, 7, "Acceleration: " + acceleration);
                             drawString(playfieldWidth + 2, 8, "Max Speed: " + maxspeed);
                             drawString(playfieldWidth + 2, 9, "Playfield Width: " + playfieldWidth);
-                            drawString(playfieldWidth + 2, 10, "Ys : " + newBullet.y + " " + newObject.y + " " + " Xs : " + newBullet.x + " " + newObject.x);
                             // ---------------------------------------- //
 
 
@@ -241,7 +240,7 @@ namespace FinalProject
                         break;
                 }
 
-            } while (choice > 0 && choice <= 3);
+            } while (choice > 0 && choice <= 4);
         }
 
         // reading the key pressed by user, no issues.
